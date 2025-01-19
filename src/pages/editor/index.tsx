@@ -146,7 +146,7 @@ export function Editor() {
 
                       const { position, rotation, scale } = transformControl.object;
 
-                      // Normalize rotation to avoid gimbal lock issues
+                      // Normalize rotation 
                       const quaternion = transformControl.object.quaternion;
                       const normalizedRotation = new THREE.Euler().setFromQuaternion(
                           quaternion
