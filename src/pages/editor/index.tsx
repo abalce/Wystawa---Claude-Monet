@@ -14,6 +14,7 @@ import clsx from "clsx";
 import { useRef } from "react";
 import * as THREE from "three";
 
+// Mapa przycisków klawiatury do sterowania
 const keyboardMap = [
   { name: "forward", keys: ["ArrowUp", "KeyW"] },
   { name: "backward", keys: ["ArrowDown", "KeyS"] },
@@ -21,12 +22,9 @@ const keyboardMap = [
   { name: "rightward", keys: ["ArrowRight", "KeyD"] },
   { name: "jump", keys: ["Space"] },
   { name: "run", keys: ["Shift"] },
-  { name: "action1", keys: ["1"] },
-  { name: "action2", keys: ["2"] },
-  { name: "action3", keys: ["3"] },
-  { name: "action4", keys: ["KeyF"] },
 ];
 
+// Funkcja debounce, zapewnia opóźnienie w wykonywaniu funkcji
 const debounce = (func: any, wait: number) => {
   let timeout: any;
   return function executedFunction(...args: any) {
@@ -35,28 +33,31 @@ const debounce = (func: any, wait: number) => {
       func(...args);
     };
     clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
+    timeout = setTimeout(later, wait); // Wywołanie funkcji po opóźnieniu
   };
 };
 
 export function Editor() {
   const store = useStore();
+
+  // Funkcja do eksportowania danych do pliku JSON
   const exportJson = () => {
     const data = store.frames;
     const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "data.json";
+    a.download = "data.json"; // Ustawienie nazwy pliku do pobrania
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const { mode, selected } = store;
-  const refMap = useRef(new Map<string, any>()).current;
+  const refMap = useRef(new Map<string, any>()).current; // Mapa referencji do transformacji obiektów
 
   return (
       <div className="grid relative h-screen grid-cols-[20vw_1fr]">
+        {/* Sekcja przycisków do zmiany trybu (translate, rotate, scale) */}
         {store.selected && (
             <div className="absolute flex gap-2 top z-50 right-[50%]">
               <button
@@ -80,6 +81,7 @@ export function Editor() {
             </div>
         )}
 
+        {/* Przycisk do usunięcia wszystkich ramek */}
         <button
             onClick={() => {
               store.frames.forEach((v) => {
@@ -91,16 +93,19 @@ export function Editor() {
           delete all
         </button>
 
+        {/* Przycisk eksportu do JSON */}
         <button
             onClick={exportJson}
             className="absolute top-4 right-4 z-50 py-2 px-4 bg-white rounded"
         >
           Export
         </button>
+        
+        {/* Sekcja z obrazkami */}
         <div className="h-full bg-black">
           <div className="overflow-auto h-screen">
             <div className="grid grid-cols-2 gap-4">
-              {[1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(
+              {[1, 2, 3, 4, 5, 6,7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(
                   (i) => (
                       <div
                           onClick={() => {
@@ -127,15 +132,19 @@ export function Editor() {
             </div>
           </div>
         </div>
+
+        {/* Canvas z widokiem 3D */}
         <Canvas style={{ backgroundColor: "#555555" }} className="w-full h-full">
           <OrbitControls />
 
           <pointLight position={[0, 20, 10]} intensity={1.5} />
+          
+          {/* Renderowanie obiektów i kontrola transformacji */}
           {store.frames.map((v) => {
             return (
                 <TransformControls
                     mode={mode}
-                    ref={(r) => r && refMap.set(v.uuid, r)}
+                    ref={(r) => r && refMap.set(v.uuid, r)} // Ustawienie referencji do obiektu
                     onClick={() => {
                       store.setSelected(v.uuid);
                       store.selectImage(undefined);
@@ -146,7 +155,7 @@ export function Editor() {
 
                       const { position, rotation, scale } = transformControl.object;
 
-                      // Normalize rotation 
+                      // Normalizacja rotacji
                       const quaternion = transformControl.object.quaternion;
                       const normalizedRotation = new THREE.Euler().setFromQuaternion(
                           quaternion
@@ -174,6 +183,7 @@ export function Editor() {
                     scale={v?.scale ?? [1, 1, 1]}
                     enabled={selected === v.uuid}
                 >
+                  {/* Przycisk do usunięcia obiektu */}
                   {selected === v.uuid && (
                       <Html position={[0, -5, 0]} className="flex gap-3 w-fit">
                         <button
@@ -200,11 +210,14 @@ export function Editor() {
                 </TransformControls>
             );
           })}
+
+          {/* Fizyczne właściwości pokoju */}
           <Physics>
             <RigidBody type="fixed" colliders="trimesh">
               <Room editor />
             </RigidBody>
 
+            {/* Sterowanie kamery */}
             <KeyboardControls map={keyboardMap}>
               <Ecctrl
                   maxVelLimit={10}

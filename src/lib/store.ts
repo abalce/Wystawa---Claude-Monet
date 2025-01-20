@@ -1,29 +1,28 @@
 import {create} from "zustand";
 import {persist} from "zustand/middleware";
-
+// Typ definiujący ramkę (Frame)
 type Frame = {
-  img: string;
-  rotation?: [number, number, number, string];
-  position?: [number, number, number];
-  scale?: [number, number, number];
-  uuid: string;
+  img: string; // Ścieżka do obrazu
+  rotation?: [number, number, number]; // Opcjonalna rotacja (x, y, z)
+  position?: [number, number, number]; // Opcjonalna pozycja (x, y, z)
+  scale?: [number, number, number]; // Opcjonalna skala (x, y, z)
+  uuid: string; // Unikalny identyfikator ramki
 };
+// Typ definiujący stan magazynu (Store)
 type Store = {
-  selected?: string;
-  setSelected: (uuid?: string) => void;
-  mode?: "rotate" | "translate" | "scale";
-  setMode: (mode: "rotate" | "translate" | "scale") => void;
-  frames: Frame[];
-  addFrame: (frame: Frame) => void;
-  removeFrame: (uuid: string) => void;
-  updateFrame: (frame: Frame) => void;
-  selectImage: (img?: string) => void;
-  selectedImage?: string;
+  selected?: string; // UUID wybranej ramki
+  setSelected: (uuid?: string) => void; // Funkcja ustawiająca wybraną ramkę
+  mode?: "rotate" | "translate" | "scale"; // Tryb edycji (rotacja, translacja, skalowanie)
+  setMode: (mode: "rotate" | "translate" | "scale") => void; // Funkcja ustawiająca tryb edycji
+  frames: Frame[]; // Lista ramek
+  addFrame: (frame: Frame) => void; // Funkcja dodająca nową ramkę
+  removeFrame: (uuid: string) => void; // Funkcja usuwająca ramkę po UUID
+  updateFrame: (frame: Frame) => void; // Funkcja aktualizująca ramkę
+  selectImage: (img?: string) => void; // Funkcja ustawiająca wybrany obraz
+  selectedImage?: string; // Ścieżka do wybranego obrazu
 };
-
-let defaultFrames: Frame[];
-// eslint-disable-next-line prefer-const
-defaultFrames = [
+// Domyślne dane dla ramek
+const defaultFrames: Frame[] = [
   {
     "uuid": "41287e7a-48c7-44ad-9cec-f5f9297dacc1",
     "position": [-4, 4.3603414372098435, -5.756363016849843],
@@ -133,7 +132,8 @@ defaultFrames = [
     "img": "20.jpg",
     "scale": [1, 1.2525400326507667, 1]
   }
-] as unknown as Frame[];
+];
+// Tworzenie stanu z użyciem Zustand i middleware 'persist'
 export const useStore = create(
   persist<Store>(
     (set) => ({
